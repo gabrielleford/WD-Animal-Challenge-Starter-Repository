@@ -1,15 +1,17 @@
+require('dotenv').config();
 const express = require("express");
 const db = require("./db");
-
+const middleware = require("./middleware");
 const app = express();
 
-app.use(require("./middleware/headers"));
+
 
 const controllers = require("./controllers");
 
 app.use(express.json());
 
 app.use("/user", controllers.usercontroller);
+app.use(middleware.validateSession);
 app.use("/animal", controllers.animalcontroller);
 
 db.authenticate()

@@ -12,13 +12,16 @@ router.post("/create", async (req, res) => {
       password: bcrypt.hashSync(password, 13),
     });
 
+    let token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: 60 * 60 * 24});
+
     res.status(201).json({
       message: "User successfully created",
       user: user,
+      sessionToken: token,
     });
   } catch (err) {
     res.status(500).json({
-      message: "Failed to create user",
+      message: err,
     });
   }
 });
@@ -31,17 +34,22 @@ router.post("/login", async (req, res) => {
         username: username,
       },
     });
-    if (loginUser) {
+    let passwordComparison = await bcrypt.compare(password, loginUser.password);
+    if (passwordComparison) {
+      let token = jwt.sign({ id: loginUser.id }, process.env.JWT_SECRET, {
+        expiresIn: 60 * 60 * 24,
+      });
       res.status(200).json({
         user: loginUser,
-        message: "User successfully logged in",
+        message: "User successfully logged in!",
+        sessionToken: token,
       });
     } else {
       res.status(401).json({
         message: "Login failed",
       });
     }
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({
       message: "Failed to log user in",
     });
