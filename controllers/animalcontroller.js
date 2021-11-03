@@ -56,10 +56,11 @@ router.delete("/delete/:animalName", validateSession, async (req, res) => {
 router.put("/update/:animalName", validateSession, async (req, res) => {
   const { name, legNumber, predator } = req.body.animal;
   const animalName = req.params.animalName;
-
+  const { id } = req.user;
   const query = {
     where: {
       name: animalName,
+      userId: id
     },
   };
 
@@ -72,6 +73,20 @@ router.put("/update/:animalName", validateSession, async (req, res) => {
   try {
     const update = await Animal.update(updatedAnimal, query);
     res.status(200).json({ message: "Animal Updated" });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+});
+
+router.get("/", validateSession, async (req, res) => {
+  const { id } = req.user;
+  try {
+    const entries = await Animal.findAll({
+      where: {
+        userId: id,
+      },
+    });
+    res.status(200).json(entries);
   } catch (err) {
     res.status(500).json({ error: err });
   }
